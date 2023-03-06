@@ -64,12 +64,30 @@ class Board:
      # check state checker
     def win_condition(self, color, board_change=None): # board_change = [(x1, y1), (x2, y2)]
         win = True
+        changing_piece = None
+        old_tile = None
+        new_tile = None
+        new_tile_old_piece = None
         pieces = [
             i.occupying_piece for i in self.tiles if i.occupying_piece is not None
         ]
+        if board_change is not None:
+            for tile in self.tiles:
+                if tile.pos == board_change[0]:
+                    changing_piece = tile.occupying_piece
+                    old_tile = tile
+                    old_tile.occupying_piece = None
+            for tile in self.tiles:
+                if tile.pos == board_change[1]:
+                    new_tile = tile
+                    new_tile_old_piece = new_tile.occupying_piece
+                    new_tile.occupying_piece = changing_piece
         for piece in pieces:
             if not piece.joined:
                 win = False
+        if board_change is not None:
+            old_tile.occupying_piece = changing_piece
+            new_tile.occupying_piece = new_tile_old_piece
         return win
     
     def draw(self, display):
