@@ -35,8 +35,3 @@ class Tile:
             pygame.draw.rect(display, self.highlight_color, self.rect)
         else:
             pygame.draw.rect(display, self.color, self.rect)
-        # adds the chess piece icons
-        if self.occupying_piece != None:
-            centering_rect = self.occupying_piece.img.get_rect()
-            centering_rect.center = self.rect.center
-            display.blit(self.occupying_piece.color, centering_rect.topleft)

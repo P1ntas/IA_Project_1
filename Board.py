@@ -62,7 +62,7 @@ class Board:
                 self.selected_piece = clicked_tile.occupying_piece
 
      # check state checker
-    def win_condition(self, color, board_change=None): # board_change = [(x1, y1), (x2, y2)]
+    def win_condition(self, board_change=None): # board_change = [(x1, y1), (x2, y2)]
         win = True
         changing_piece = None
         old_tile = None
