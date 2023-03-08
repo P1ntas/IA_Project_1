@@ -1,5 +1,6 @@
 import pygame
 from Tile import Tile
+from Piece import Piece
 
 # Game state checker
 class Board:
@@ -20,8 +21,8 @@ class Board:
 
     def generate_tiles(self):
         output = []
-        for y in range(8):
-            for x in range(8):
+        for y in range(4):
+            for x in range(4):
                 output.append(
                     Tile(x,  y, self.tile_width, self.tile_height)
                 )
@@ -61,7 +62,7 @@ class Board:
         elif clicked_tile.occupying_piece is not None:
                 self.selected_piece = clicked_tile.occupying_piece
 
-     # check state checker
+    # check state checker
     def win_condition(self, board_change=None): # board_change = [(x1, y1), (x2, y2)]
         win = True
         changing_piece = None
