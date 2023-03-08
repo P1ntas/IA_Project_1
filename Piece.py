@@ -39,10 +39,6 @@ class Piece:
         else:
             board.selected_piece = None
             return False
-
-    # True for all pieces
-    def attacking_tiles(self, board):
-        return self.get_moves(board)
     
     def get_possible_moves(self, board):
         output = []
