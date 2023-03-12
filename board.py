@@ -79,7 +79,7 @@ class Board:
         for x in self.tiles:
             for possible_tile in x:
                 if possible_tile.color == YELLOW:
-                    possible_tile.color = WHITE
+                    possible_tile.color = CREAM
 
     def can_move_piece(self, piece, row, col):
         if piece.joined:
