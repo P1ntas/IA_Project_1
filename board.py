@@ -136,7 +136,7 @@ class Board:
         while True:
             if self.win_condition():
                 self.draw_game_over_screen()
-                pygame.time.delay((5 * 1000))
+                pygame.time.delay((3 * 1000))
                 pygame.quit()
                 sys.exit()
             for event in pygame.event.get():
