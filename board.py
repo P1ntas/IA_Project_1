@@ -45,7 +45,8 @@ class Board:
                         piece.draw(surface)
 
                         if self.piece_selected and self.selected_tile is not None:
-                            possible_moves = self.get_possible_moves()
+                            (sel_x, sel_y) = (self.selected_tile.row, self.selected_tile.col)
+                            possible_moves = self.get_possible_moves(sel_x, sel_y)
                             if (piece.row, piece.col) == (self.selected_tile.row, self.selected_tile.col):
                                 for move in possible_moves:
                                     x = move[0]
@@ -89,13 +90,13 @@ class Board:
                 return True
         return False
 
-    def get_possible_moves(self):
+    def get_possible_moves(self, x, y):
         if self.selected_tile is None:
             return []
 
         possible_moves = []
         piece = next((piece for piece in self.pieces if
-                      piece.row == self.selected_tile.row and piece.col == self.selected_tile.col), None)
+                      piece.row == x and piece.col == y), None)
 
         if piece is None:
             return []
