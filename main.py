@@ -12,11 +12,9 @@ screen = pygame.display.set_mode(window_size)
 fons_path = "fonts/Grand9K Pixel.ttf"
 font = pygame.font.Font(fons_path, 30)
 
-# set the colors for the buttons
 button_color = (150, 150, 150)
 button_hover_color = (200, 200, 200)
 
-# create the buttons
 button1 = font.render("Player", True, WHITE)
 button1_rect = button1.get_rect(center=(window_size[0]//2, window_size[1]//3))
 
@@ -26,31 +24,13 @@ button2_rect = button2.get_rect(center=(window_size[0]//2, window_size[1]//2))
 button3 = font.render("Settings", True, WHITE)
 button3_rect = button3.get_rect(center=(window_size[0]//2, 2*window_size[1]//3))
 
-# game loop
+clock = pygame.time.Clock()
+
 running = True
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = pygame.mouse.get_pos()
-
-            if button1_rect.collidepoint(mouse_pos):
-                board = Board(4, 4)
-
-                board.run()
-
-            if button2_rect.collidepoint(mouse_pos):
-                print("Option 2 clicked!")
-
-            if button3_rect.collidepoint(mouse_pos):
-                print("Option 3 clicked!")
-
-    # fill the screen with a color
     screen.fill((173, 216, 230))
 
-    # draw the buttons
     pygame.draw.rect(screen, button_color, button1_rect)
     pygame.draw.rect(screen, button_color, button2_rect)
     pygame.draw.rect(screen, button_color, button3_rect)
@@ -69,3 +49,23 @@ while running:
     screen.blit(button3, button3_rect)
 
     pygame.display.flip()
+
+    clock.tick(60)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+
+            if button1_rect.collidepoint(mouse_pos):
+                board = Board(4, 4, screen, "player")
+
+                board.run()
+
+            if button2_rect.collidepoint(mouse_pos):
+                print("Option 2 clicked!")
+
+            if button3_rect.collidepoint(mouse_pos):
+                print("Option 3 clicked!")

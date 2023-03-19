@@ -8,9 +8,11 @@ from piece import Piece
 
 
 class Board:
-    def __init__(self, width, height):
+    def __init__(self, width, height, screen, mode):
         self.width = width
         self.height = height
+        self.screen = screen
+        self.mode = mode
         self.tiles = [[Tile(row, col) for col in range(width)] for row in range(height)]
         self.selected_tile = None
         self.pieces = self.create_pieces()
@@ -45,8 +47,7 @@ class Board:
                         piece.draw(surface)
 
                         if self.piece_selected and self.selected_tile is not None:
-                            (sel_x, sel_y) = (self.selected_tile.row, self.selected_tile.col)
-                            possible_moves = self.get_possible_moves(sel_x, sel_y)
+                            possible_moves = self.get_possible_moves()
                             if (piece.row, piece.col) == (self.selected_tile.row, self.selected_tile.col):
                                 for move in possible_moves:
                                     x = move[0]
@@ -90,13 +91,13 @@ class Board:
                 return True
         return False
 
-    def get_possible_moves(self, x, y):
+    def get_possible_moves(self):
         if self.selected_tile is None:
             return []
 
         possible_moves = []
         piece = next((piece for piece in self.pieces if
-                      piece.row == x and piece.col == y), None)
+                      piece.row == self.selected_tile.row and piece.col == self.selected_tile.col), None)
 
         if piece is None:
             return []
@@ -123,20 +124,20 @@ class Board:
             return True
         return False
 
-    def draw_game_over_screen(self):
-        screen.fill((0, 0, 0))
+    def draw_win_screen(self):
+        self.screen.fill((0, 0, 0))
         font_path = "fonts/Grand9K Pixel.ttf"
         font = pygame.font.Font(font_path, 40)
         title = font.render('You Won!', True, (255, 255, 255))
         moves_button = font.render('Moves = ' + str(self.moves), True, (255, 255, 255))
-        screen.blit(title, (SCREEN_WIDTH / 2 - title.get_width() / 2, SCREEN_WIDTH / 2 - title.get_height() / 3 - 40))
-        screen.blit(moves_button, (SCREEN_WIDTH / 2 - moves_button.get_width() / 2, SCREEN_HEIGHT / 1.9 + moves_button.get_height() - 30))
+        self.screen.blit(title, (SCREEN_WIDTH / 2 - title.get_width() / 2, SCREEN_WIDTH / 2 - title.get_height() / 3 - 40))
+        self.screen.blit(moves_button, (SCREEN_WIDTH / 2 - moves_button.get_width() / 2, SCREEN_HEIGHT / 1.9 + moves_button.get_height() - 30))
         pygame.display.update()
 
     def run(self):
         while True:
             if self.win_condition():
-                self.draw_game_over_screen()
+                self.draw_win_screen()
                 pygame.time.delay((3 * 1000))
                 pygame.quit()
                 sys.exit()
@@ -147,12 +148,12 @@ class Board:
                 else:
                     self.handle_event(event)
 
-            self.draw(screen)
+            self.draw(self.screen)
 
             pygame.display.flip()
 
-            clock.tick(60)
+    def make_move(self, move):
+        return
 
-
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-clock = pygame.time.Clock()
+    def undo_move(self, move):
+        return
