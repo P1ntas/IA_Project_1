@@ -53,3 +53,21 @@ class Solver:
                 self.board.undo_move(move)
                 best_value = min(best_value, value)
             return best_value
+
+    def bfs(self, depth):
+        visited = []
+        queue = []
+        possible_moves = self.board.get_possible_moves()
+        queue.append(possible_moves)
+
+        while queue:
+            m = queue.pop(0)
+            if m not in visited:
+                visited.append(m)
+                for move in self.board.get_possible_moves():
+                    self.board.make_move(move)
+                    queue.append(self.board.get_possible_moves())
+                    self.board.undo_move(move)
+
+                    #store the path and then return it
+                    #make function that having the solution path executed it

@@ -18,6 +18,7 @@ class Board:
         self.pieces = self.create_pieces()
         self.piece_selected = False
         self.moves = 0
+        self.all_moves = []
 
     def create_pieces(self):
         tiles = random.sample([(row, col) for row in range(4) for col in range(4)], 9)
@@ -76,6 +77,7 @@ class Board:
                         self.tiles[self.selected_tile.row][self.selected_tile.col].has_piece = False
                         self.piece_selected = False
                         self.moves += 1
+                        self.all_moves.append((self.selected_tile.row, self.selected_tile.col, row, col))
                     self.selected_tile = None
 
         for x in self.tiles:
