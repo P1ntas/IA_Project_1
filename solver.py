@@ -33,6 +33,17 @@ class Solver:
     def count_unjoined_pieces_heuristic(self):
         return len([piece for piece in self.board.pieces if not piece.joined])
 
+    def sum_distances_heuristic(pieces):
+        total_distance = 0
+        for piece in pieces:
+            if not piece.joined:
+                same_color_pieces = [p for p in pieces if p.color == piece.color and p != piece]
+                if same_color_pieces:
+                    distances = [abs(piece.row - p.row) + abs(piece.col - p.col) for p in same_color_pieces]
+                    min_distance = min(distances)
+                    total_distance += min_distance
+        return total_distance
+
     def minimax(self, depth, maximizing_player):
         if depth == 0 or self.board.win_condition():
             return self.count_unjoined_pieces_heuristic()
