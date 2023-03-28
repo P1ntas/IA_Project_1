@@ -33,11 +33,11 @@ class Solver:
     def count_unjoined_pieces_heuristic(self):
         return len([piece for piece in self.board.pieces if not piece.joined])
 
-    def sum_distances_heuristic(pieces):
+    def sum_distances_heuristic(self, pieces):
         total_distance = 0
-        for piece in pieces:
+        for piece in self.board.pieces:
             if not piece.joined:
-                same_color_pieces = [p for p in pieces if p.color == piece.color and p != piece]
+                same_color_pieces = [p for p in self.board.pieces if p.color == piece.color and p != piece]
                 if same_color_pieces:
                     distances = [abs(piece.row - p.row) + abs(piece.col - p.col) for p in same_color_pieces]
                     min_distance = min(distances)
