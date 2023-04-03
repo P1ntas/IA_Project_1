@@ -6,6 +6,23 @@ class Solver:
     def __init__(self, board):
         self.board = board
 
+## se peças da mesma cor forem adjacentes entao juntar peças
+## nao bloquear outras peças
+## diminuir distancia entre peças da mesma cor
+
+    def greedy(state, child_states, avaliation)
+        next_states = child_states(state)
+
+        result = avaliation(next_states[1])
+        return_state = next_states[1]
+
+        for next in next_states:
+            if (result < avaliation(next)):
+                return_state = next
+        
+        return return_state
+
+
     def disjoint_groups_heuristic(self):
         counts = {}
         for piece in self.board.pieces:
@@ -68,6 +85,3 @@ class Solver:
                     self.board.make_move(move)
                     queue.append(self.board.get_possible_moves())
                     self.board.undo_move(move)
-
-                    #store the path and then return it
-                    #make function that having the solution path executed it
