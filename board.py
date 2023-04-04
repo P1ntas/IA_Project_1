@@ -5,6 +5,7 @@ import pygame
 from constants import *
 from tile import Tile
 from piece import Piece
+from solver import Solver
 
 
 class Board:
@@ -137,25 +138,66 @@ class Board:
         pygame.display.update()
 
     def run(self):
-        while True:
-            if self.win_condition():
-                self.draw_win_screen()
-                pygame.time.delay((3 * 1000))
-                pygame.quit()
-                sys.exit()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+        mode = self.mode
+        if mode == "ai":
+            self.selected_tile = self.pieces[0]
+            solver = Solver(self)
+            while True:
+                self.selected_tile = self.pieces[0]
+                if self.win_condition():
+                    self.draw_win_screen()
+                    pygame.time.delay((3 * 1000))
                     pygame.quit()
                     sys.exit()
-                else:
-                    self.handle_event(event)
 
-            self.draw(self.screen)
+                move, _ = solver.minimax(5, True) # get the best move from minimax with depth 5
+                if move is None:
+                    pygame.quit()
+                    sys.exit()
+                print("test")
+                self.make_move(move) # make the best move
+                self.draw(self.screen) # draw the board after each move
+                pygame.display.flip() # update the screen
+                pygame.time.delay(500) # add a small delay between each move
 
-            pygame.display.flip()
+        else:
+            while True:
+                if self.win_condition():
+                    self.draw_win_screen()
+                    pygame.time.delay((3 * 1000))
+                    pygame.quit()
+                    sys.exit()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    else:
+                        self.handle_event(event)
 
-    def make_move(self, move):
+                self.draw(self.screen)
+
+                pygame.display.flip()
+
+
+
+
+
+
+    def make_move(self, piece, move):
+        
         return
 
     def undo_move(self, move):
         return
+    
+    #Make a function that copies the board and returns it
+    def copy(self):
+        copy = Board(self.screen)
+        copy.tiles = copy.deepcopy(self.tiles)
+        copy.pieces = copy.deepcopy(self.pieces)
+        copy.piece_selected = copy.deepcopy(self.piece_selected)
+        copy.selected_tile = copy.deepcopy(self.selected_tile)
+        copy.moves = copy.deepcopy(self.moves)
+        copy.all_moves = copy.deepcopy(self.all_moves)
+        return copy
+

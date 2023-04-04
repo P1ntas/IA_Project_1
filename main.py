@@ -65,7 +65,10 @@ while running:
                 board.run()
 
             if button2_rect.collidepoint(mouse_pos):
+                #watch ai play
+                board = Board(4, 4, screen, "ai")
                 print("Option 2 clicked!")
+                board.run()
 
             if button3_rect.collidepoint(mouse_pos):
                 print("Option 3 clicked!")
