@@ -19,6 +19,7 @@ class Board:
         self.piece_selected = False
         self.moves = 0
         self.all_moves = []
+        self.coords = set()
 
     def create_pieces(self):
         tiles = random.sample([(row, col) for row in range(4) for col in range(4)], 9)
@@ -56,6 +57,7 @@ class Board:
                                     self.tiles[x][y].color = YELLOW
                                     self.tiles[x][y].draw(surface)
 
+
     def handle_event(self, event):
         self.check_joined_pieces()
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -72,12 +74,43 @@ class Board:
                     piece = next((piece for piece in self.pieces if
                                   piece.row == self.selected_tile.row and piece.col == self.selected_tile.col), None)
                     if piece and self.can_move_piece(piece, row, col):
-                        piece.row, piece.col = row, col
-                        self.tiles[row][col].has_piece = True
-                        self.tiles[self.selected_tile.row][self.selected_tile.col].has_piece = False
-                        self.piece_selected = False
-                        self.moves += 1
-                        self.all_moves.append((self.selected_tile.row, self.selected_tile.col, row, col))
+                        if piece.joined == False:
+                            piece.row, piece.col = row, col
+                            self.tiles[row][col].has_piece = True
+                            self.tiles[self.selected_tile.row][self.selected_tile.col].has_piece = False
+                            self.piece_selected = False
+                            self.moves += 1
+                            self.all_moves.append((self.selected_tile.row, self.selected_tile.col, row, col))
+                        else:
+                            if (row - piece.row) == 1:
+                                direction = "down"
+                            elif (row - piece.row) == -1:
+                                direction = "up"
+                            elif (col - piece.col) == 1:
+                                direction = "right"
+                            elif (col - piece.col) == -1:
+                                direction = "left"
+                            for i in self.coords:
+                                for j in self.pieces:
+                                    if j.row == i[0] and j.col == i[1]:
+                                            if direction == "up":
+                                                j.row = j.row - 1
+                                                self.tiles[i[0] - 1][i[1]].has_piece = True
+                                                self.tiles[i[0]][i[1]].has_piece = False
+                                            if direction == "down":
+                                                j.row = j.row + 1
+                                                self.tiles[i[0] + 1][i[1]].has_piece = True
+                                                self.tiles[i[0]][i[1]].has_piece = False                                           
+                                            if direction == "right":
+                                                j.col = j.col + 1
+                                                self.tiles[i[0]][i[1] + 1].has_piece = True
+                                                self.tiles[i[0]][i[1]].has_piece = False                                       
+                                            if direction == "left":
+                                                j.col = j.col - 1
+                                                self.tiles[i[0]][i[1] - 1].has_piece = True
+                                                self.tiles[i[0]][i[1]].has_piece = False
+                            self.piece_selected = False
+                            self.moves += 1                            
                     self.selected_tile = None
                 self.selected_tile = None
 
@@ -87,12 +120,50 @@ class Board:
                     possible_tile.color = CREAM
 
     def can_move_piece(self, piece, row, col):
-        if piece.joined:
-            return False
         if (abs(row - piece.row) == 1 and col == piece.col) or (abs(col - piece.col) == 1 and row == piece.row):
             if not self.tiles[row][col].has_piece:
+                if piece.joined == False:
+                    return True
+                if (row - piece.row) == 1:
+                    direction = "down"
+                elif (row - piece.row) == -1:
+                    direction = "up"
+                elif (col - piece.col) == 1:
+                    direction = "right"
+                elif (col - piece.col) == -1:
+                    direction = "left"
+
+                self.coords = set()
+                self.coords.add((piece.row, piece.col))                
+                for row, col in self.coords:
+                    for d_row, d_col in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                        neighbor_row, neighbor_col = row + d_row, col + d_col
+                        if neighbor_row > self.height or neighbor_row < self.height or neighbor_col > self.width or neighbor_col < self.width:
+                            continue
+                        if self.tiles[neighbor_row][neighbor_col].color == piece.color:
+                            self.coords.add((neighbor_row, neighbor_col))
+                for row, col in self.coords:
+                    for d_row, d_col in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                        neighbor_row, neighbor_col = row + d_row, col + d_col
+                        if neighbor_row > self.height or neighbor_row < self.height or neighbor_col > self.width or neighbor_col < self.width:
+                            continue
+                        if self.tiles[neighbor_row][neighbor_col].color == piece.color:
+                            self.coords.add((neighbor_row, neighbor_col))
+
+                for i in self.coords:
+                    if direction == "up":
+                        if not ((not self.tiles[i[0] - 1][i[1]].has_piece) or self.tiles[i[0] - 1][i[1]].color == piece.color):
+                            return False
+                    if direction == "down":
+                        if not ((not self.tiles[i[0 + 1]][i[1]].has_piece) or self.tiles[i[0] + 1][i[1]].color == piece.color):
+                            return False
+                    if direction == "right":
+                        if not ((not self.tiles[i[0]][i[1] + 1].has_piece) or self.tiles[i[0]][i[1] + 1].color == piece.color):
+                            return False
+                    if direction == "left":
+                        if not ((not self.tiles[i[0]][i[1] - 1].has_piece) or self.tiles[i[0]][i[1] - 1].color == piece.color):
+                            return False
                 return True
-        return False
 
     def get_possible_moves(self):
         if self.selected_tile is None:
