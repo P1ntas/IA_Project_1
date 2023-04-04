@@ -121,16 +121,20 @@ while running:
                                 mouse_pos = pygame.mouse.get_pos()
 
                                 if ai_button1_rect.collidepoint(mouse_pos):
-                                    print("BFS clicked!")
+                                    board = Board(4, 4, screen, "bfs")
+                                    board.run()
 
                                 if ai_button2_rect.collidepoint(mouse_pos):
-                                    print("Minimax clicked!")
+                                    board = Board(4, 4, screen, "minimax")
+                                    board.run()
 
                                 if ai_button3_rect.collidepoint(mouse_pos):
-                                    print("Iterative Deepening clicked!")
+                                    board = Board(4, 4, screen, "iterative_deepening")
+                                    board.run()
 
                                 if ai_button4_rect.collidepoint(mouse_pos):
-                                    print("A Star clicked!")
+                                    board = Board(4, 4, screen, "a_star")
+                                    board.run()
 
 
             if button3_rect.collidepoint(mouse_pos):
