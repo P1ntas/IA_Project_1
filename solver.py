@@ -1,5 +1,6 @@
 import sys
-from queue import Queue
+from collections import deque
+from heapq import heappush, heappop
 from queue import PriorityQueue
 from copy import deepcopy
 
@@ -54,14 +55,16 @@ class Solver:
     def minimax(self, depth, maximizing_player):
         if depth == 0 or self.board.win_condition():
             return None, self.count_unjoined_pieces_heuristic()
-        print("minimax")
+        
         if maximizing_player:
             best_value = -sys.maxsize
             best_move = None
             for move in self.board.get_possible_moves():
+                if move == self.board.get_last_move():
+                    continue
                 self.board.make_move(move)
                 _, value = self.minimax(depth - 1, False)
-                self.board.undo_move(move)
+                self.board.undo_move()
                 if value > best_value:
                     best_value = value
                     best_move = move
@@ -70,76 +73,82 @@ class Solver:
             best_value = sys.maxsize
             best_move = None
             for move in self.board.get_possible_moves():
+                if move == self.board.get_last_move():
+                    continue
                 self.board.make_move(move)
                 _, value = self.minimax(depth - 1, True)
-                self.board.undo_move(move)
+                self.board.undo_move()
                 if value < best_value:
                     best_value = value
                     best_move = move
             return best_move, best_value
 
-
-
     
-    def bfs(self, board, depth):
-        queue = Queue()
+
+    def bfs(self, board):
+        # initialize queue with initial board
+        queue = deque([(board, [])])
+
+        # initialize set to keep track of visited states
         visited = set()
-        last_moves = {}
-        queue.put((board, 0, True, None))
-        best_value = -sys.maxsize
-        best_path = []
-        while not queue.empty():
-            board, curr_depth, maximizing_player, parent = queue.get()
-            if curr_depth == depth or board.win_condition():
-                value = self.count_unjoined_pieces_heuristic()
-                if maximizing_player:
-                    if value > best_value:
-                        best_value = value
-                        best_path = [board]
-                        while parent:
-                            best_path.insert(0, parent)
-                            parent = last_moves.get(parent)
-                    elif value == best_value:
-                        while parent:
-                            best_path.insert(0, parent)
-                            parent = last_moves.get(parent)
-                else:
-                    if value < best_value:
-                        best_value = value
-                        best_path = [board]
-                        while parent:
-                            best_path.insert(0, parent)
-                            parent = last_moves.get(parent)
-                    elif value == best_value:
-                        while parent:
-                            best_path.insert(0, parent)
-                            parent = last_moves.get(parent)
-            else:
-                moves = board.get_possible_moves()
-                for move in moves:
-                    if move in last_moves and last_moves[move] == board:
-                        continue
-                    new_board = board.copy()
-                    new_board.make_move(move)
-                    if new_board in visited:
-                        continue
+
+        # initialize node counter
+        nodes_explored = 0
+
+        while queue:
+            # get next board and path from queue
+            board, path = queue.popleft()
+
+            # check if board is complete
+            if board.win_condition():
+                return path
+
+            # generate children and add to queue if not visited before
+            board.selected_tile = board.get_first_tile()
+            if board.selected_tile is None:
+                return path
+            for move in board.get_possible_moves():
+                new_board = board.copy()
+                new_board.make_move(move)
+                if new_board not in visited:
+                    queue.append((new_board, path + [move]))
+                    nodes_explored += 1
                     visited.add(new_board)
-                    last_moves[new_board] = board
-                    queue.put((new_board, curr_depth + 1, not maximizing_player, board))
-        return best_path
+
+        # if no complete board is found, return None
+        return None, nodes_explored
 
 
-    def greddy(self):
-        best_move = None
-        best_value = -sys.maxsize
-        for move in self.board.get_possible_moves():
-            self.board.make_move(move)
-            value = self.count_unjoined_pieces_heuristic()
-            self.board.undo_move(move)
-            if value > best_value:
-                best_value = value
-                best_move = move
-        return best_move
+    def greedy(self, board):
+        # initialize list of moves
+        moves = []
+
+        # repeat until game is complete
+        while not board.win_condition():
+            # get all possible moves
+            possible_moves = board.get_possible_moves()
+            if len(possible_moves) == 0:
+                return moves
+            # initialize best move and its score
+            best_move = possible_moves[0]
+            best_score = 0
+
+            # evaluate all possible moves
+            for move in possible_moves:
+                new_board = board.copy()
+                new_board.make_move(move)
+                new_solver = Solver(new_board)
+                score = new_solver.count_unjoined_pieces_heuristic()
+                if score > best_score:
+                    best_move = move
+                    best_score = score
+
+            # add best move to list of moves and update board
+            moves.append(best_move)
+            board.make_move(best_move)
+
+        return moves
+
     
     def iterative_deepening(self, max_depth):
         best_move = None
@@ -148,37 +157,49 @@ class Solver:
             for move in self.board.get_possible_moves():
                 self.board.make_move(move)
                 value = self.minimax(depth, False)
-                self.board.undo_move(move)
+                self.board.undo_move()
                 if value > best_value:
                     best_value = value
                     best_move = move
         return best_move
     
 
-    def a_star(self, depth):
-        start_node = Node(self.board, 0, self.count_unjoined_pieces_heuristic())
-        queue = PriorityQueue()
-        queue.put(start_node)
+    def astar(self):
+        # initialize queue with initial board
+        queue = deque([(self.board, [])])
+
+        # initialize set to keep track of visited states
         visited = set()
-        
-        while not queue.empty():
-            node = queue.get()
-            
-            if node.board.win_condition() or node.depth == depth:
-                return node.move
-            
-            if node.board not in visited:
-                visited.add(node.board)
-                moves = node.board.get_possible_moves()
-                
-                for move in moves:
-                    new_board = node.board.copy()
-                    new_board.make_move(move)
-                    new_node = Node(new_board, node.depth+1, node.depth+1+self.count_unjoined_pieces_heuristic(), move)
-                    
-                    if new_board not in visited:
-                        queue.put(new_node)
-        
-        return None
+
+        # initialize node counter
+        nodes_explored = 0
+
+        while queue:
+            # get next board and path from queue
+            board, path = queue.popleft()
+
+            # check if board is complete
+            if board.win_condition():
+                return path, nodes_explored
+
+            # generate children and add to queue if not visited before
+            for move in board.get_possible_moves():
+                new_board = board.copy()
+                new_board.make_move(move)
+                new_path = path + [move]
+                if new_board not in visited:
+                    queue.append((new_board, new_path))
+                    nodes_explored += 1
+                    visited.add(new_board)
+
+            # sort queue based on f_score
+            queue = deque(sorted(queue, key=lambda x: self.f_score(x[0], x[1])))
+
+        # if no complete board is found, return None
+        return None, nodes_explored
+
+    def f_score(self, board, path):
+        return len(path) + self.board.count_unjoined_pieces_heuristic()
+
 
 

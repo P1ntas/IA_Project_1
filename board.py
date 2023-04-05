@@ -6,6 +6,7 @@ from constants import *
 from tile import Tile
 from piece import Piece
 from solver import Solver
+from copy import deepcopy
 
 
 class Board:
@@ -22,21 +23,21 @@ class Board:
         self.all_moves = []
 
     def create_pieces(self):
-        tiles = random.sample([(row, col) for row in range(4) for col in range(4)], 9)
-        random.shuffle(tiles)
-        pieces = []
-        for i, tile in enumerate(tiles):
-            if i < 3:
-                color = BLUE
-            elif i < 6:
-                color = GREEN
-            else:
-                color = RED
-            row, col = tile
-            piece = Piece(color, row, col)
-            pieces.append(piece)
-            self.tiles[row][col].has_piece = True
+        pieces = [
+            Piece(BLUE, 0, 0),
+            Piece(BLUE, 1, 1),
+            Piece(BLUE, 2, 2),
+            Piece(GREEN, 3, 3),
+            Piece(GREEN, 1, 3),
+            Piece(GREEN, 0, 2),
+            Piece(RED, 0, 3),
+            Piece(RED, 1, 2),
+            Piece(RED, 3, 0)
+        ]
+        for piece in pieces:
+            self.tiles[piece.row][piece.col].has_piece = True
         return pieces
+
 
     def draw(self, surface):
         surface.fill(BLACK)
@@ -139,26 +140,14 @@ class Board:
 
     def run(self):
         mode = self.mode
-        if mode == "ai":
-            self.selected_tile = self.pieces[0]
-            solver = Solver(self)
-            while True:
-                self.selected_tile = self.pieces[0]
-                if self.win_condition():
-                    self.draw_win_screen()
-                    pygame.time.delay((3 * 1000))
-                    pygame.quit()
-                    sys.exit()
-
-                move, _ = solver.minimax(5, True) # get the best move from minimax with depth 5
-                if move is None:
-                    pygame.quit()
-                    sys.exit()
-                print("test")
-                self.make_move(move) # make the best move
-                self.draw(self.screen) # draw the board after each move
-                pygame.display.flip() # update the screen
-                pygame.time.delay(500) # add a small delay between each move
+        if mode == "minimax":
+            self.run_minimax()
+        elif mode == "bfs":
+            self.run_bfs()
+        elif mode == "astar":
+            self.run_astar()
+        elif mode =="greedy":
+            self.run_greedy()
 
         else:
             while True:
@@ -178,26 +167,125 @@ class Board:
 
                 pygame.display.flip()
 
+    def make_move(self, move):
+        if self.selected_tile is None:
+            return False
+        self.selected_tile = self.tiles[move[0]][move[1]]
+        piece = next((piece for piece in self.pieces if
+            piece.row == self.selected_tile.row and piece.col == self.selected_tile.col), None)
 
 
+        if piece is None:
+            return False
+
+        if not self.can_move_piece(piece, move[0], move[1]):
+            return False
+
+        self.tiles[piece.row][piece.col].has_piece = False
+        self.all_moves.append((self.selected_tile.row, self.selected_tile.col, move[0], move[1]))
+        piece.row = move[0]
+        piece.col = move[1]
+        self.tiles[piece.row][piece.col].has_piece = True
+
+        self.selected_tile = self.tiles[piece.row][piece.col]
+        return True
 
 
+    def undo_move(self):
+        if len(self.all_moves) == 0:
+            return
+        last_move = self.all_moves.pop()
+        from_row, from_col, to_row, to_col = last_move
+        piece = next((piece for piece in self.pieces if piece.row == to_row and piece.col == to_col), None)
+        if piece:
+            piece.row, piece.col = from_row, from_col
+            self.tiles[from_row][from_col].has_piece = True
+            self.tiles[to_row][to_col].has_piece = False
+            self.moves -= 1
+            self.check_joined_pieces()
 
-    def make_move(self, piece, move):
-        
-        return
+    
+    def get_first_tile(self):
+        for row in range(self.height):
+            for col in range(self.width):
+                if self.tiles[row][col].has_piece:
+                    piece = next((piece for piece in self.pieces if piece.row == row and piece.col == col), None)
+                    if piece and not piece.joined:
+                        return self.tiles[row][col]
+        return None
 
-    def undo_move(self, move):
-        return
+                
+    def get_last_move(self):
+        if len(self.all_moves) == 0:
+            return None
+        return self.all_moves[-1][0], self.all_moves[-1][1]
     
     #Make a function that copies the board and returns it
     def copy(self):
-        copy = Board(self.screen)
-        copy.tiles = copy.deepcopy(self.tiles)
-        copy.pieces = copy.deepcopy(self.pieces)
-        copy.piece_selected = copy.deepcopy(self.piece_selected)
-        copy.selected_tile = copy.deepcopy(self.selected_tile)
-        copy.moves = copy.deepcopy(self.moves)
-        copy.all_moves = copy.deepcopy(self.all_moves)
+        copy = Board(self.width, self.height, self.screen, self.mode)
+        copy.tiles = deepcopy(self.tiles)
+        copy.pieces = deepcopy(self.pieces)
+        copy.piece_selected = deepcopy(self.piece_selected)
+        copy.selected_tile = deepcopy(self.selected_tile)
+        copy.moves = deepcopy(self.moves)
+        copy.all_moves = deepcopy(self.all_moves)
         return copy
+
+    def run_minimax(self):
+        self.selected_tile = self.get_first_tile()
+        solver = Solver(self)
+        while True:
+            self.selected_tile = self.get_first_tile()
+            
+            if self.win_condition():
+                self.draw_win_screen()
+                pygame.time.delay((3 * 1000))
+                pygame.quit()
+                sys.exit()
+
+            move, _ = solver.minimax(5, True) # get the best move from minimax with depth 5
+            if move is None:
+                pygame.time.delay((3 * 1000))
+                pygame.quit()
+                sys.exit()
+            self.make_move(move) # make the best move
+            self.draw(self.screen) # draw the board after each move
+            pygame.display.flip() # update the screen
+            pygame.time.delay(500) # add a small delay between each move
+
+    def run_bfs(self):
+        self.selected_tile = self.get_first_tile()
+        solver = Solver(self)
+
+        best_path, nodes_explored = solver.bfs(self)  # get the best move from bfs with depth 5
+
+        if best_path is None:
+            pygame.time.delay((3 * 1000))
+            pygame.quit()
+            sys.exit()
+        else:
+            for move in best_path:
+                self.make_move(move)
+                self.draw(self.screen)
+                pygame.display.flip()
+                pygame.time.delay(500)
+
+
+    def run_greedy(self):
+        self.selected_tile = self.get_first_tile()
+        aux = self.copy()
+        solver = Solver(aux)
+        
+        moves = solver.greedy(aux) # get the best move using the greedy algorithm
+        if moves is None:
+            pygame.time.delay((3 * 1000))
+            pygame.quit()
+            sys.exit()
+        
+        else:
+            for move in moves:
+                self.make_move(move)
+                self.draw(self.screen)
+                pygame.display.flip()
+                pygame.time.delay(500)
 
