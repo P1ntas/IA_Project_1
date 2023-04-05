@@ -81,6 +81,7 @@ class Board:
                         self.moves += 1
                         self.all_moves.append((self.selected_tile.row, self.selected_tile.col, row, col))
                     self.selected_tile = None
+                self.selected_tile = None
 
         for x in self.tiles:
             for possible_tile in x:
