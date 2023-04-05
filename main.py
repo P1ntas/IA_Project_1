@@ -81,6 +81,9 @@ while running:
                     ai_button4 = ai_menu_font.render("A Star", True, WHITE)
                     ai_button4_rect = ai_button4.get_rect(center=(window_size[0]//2, 5*window_size[1]//6))
 
+                    ai_button5 = ai_menu_font.render("Greedy", True, WHITE)
+                    ai_button5_rect = ai_button5.get_rect(center=(window_size[0]//2, 3*window_size[1]//4))
+
                     # Run the new AI menu
                     ai_menu_running = True
                     while ai_menu_running:
@@ -91,6 +94,7 @@ while running:
                         pygame.draw.rect(screen, button_color, ai_button2_rect)
                         pygame.draw.rect(screen, button_color, ai_button3_rect)
                         pygame.draw.rect(screen, button_color, ai_button4_rect)
+                        pygame.draw.rect(screen, button_color, ai_button5_rect)
 
                         if ai_button1_rect.collidepoint(pygame.mouse.get_pos()):
                             pygame.draw.rect(screen, button_hover_color, ai_button1_rect)
@@ -104,10 +108,14 @@ while running:
                         if ai_button4_rect.collidepoint(pygame.mouse.get_pos()):
                             pygame.draw.rect(screen, button_hover_color, ai_button4_rect)
 
+                        if ai_button5_rect.collidepoint(pygame.mouse.get_pos()):
+                            pygame.draw.rect(screen, button_hover_color, ai_button5_rect)
+
                         screen.blit(ai_button1, ai_button1_rect)
                         screen.blit(ai_button2, ai_button2_rect)
                         screen.blit(ai_button3, ai_button3_rect)
                         screen.blit(ai_button4, ai_button4_rect)
+                        screen.blit(ai_button5, ai_button5_rect)
 
                         pygame.display.flip()
 
@@ -134,6 +142,10 @@ while running:
 
                                 if ai_button4_rect.collidepoint(mouse_pos):
                                     board = Board(4, 4, screen, "a_star")
+                                    board.run()
+
+                                if ai_button4_rect.collidepoint(mouse_pos):
+                                    board = Board(4, 4, screen, "greedy")
                                     board.run()
 
 

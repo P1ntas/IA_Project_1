@@ -145,10 +145,12 @@ class Board:
             self.run_minimax()
         elif mode == "bfs":
             self.run_bfs()
-        elif mode == "astar":
+        elif mode == "a_star":
             self.run_astar()
         elif mode =="greedy":
             self.run_greedy()
+        elif mode == "iterative_deepening":
+            self.run_iterative_deepening()
 
         else:
             while True:
@@ -290,3 +292,34 @@ class Board:
                 pygame.display.flip()
                 pygame.time.delay(500)
 
+    def run_iterative_deepening(self):
+        self.selected_tile = self.get_first_tile()
+        aux = self.copy()
+        solver = Solver(aux)
+        moves = solver.iterative_deepening(aux)
+        if moves is None:
+            pygame.time.delay((3 * 1000))
+            pygame.quit()
+            sys.exit()
+        else:
+            for move in moves:
+                self.make_move(move)
+                self.draw(self.screen)
+                pygame.display.flip()
+                pygame.time.delay(500)
+
+    def run_astar(self):
+        self.selected_tile = self.get_first_tile()
+        aux = self.copy()
+        solver = Solver(aux)
+        moves = solver.a_star(aux)
+        if moves is None:
+            pygame.time.delay((3 * 1000))
+            pygame.quit()
+            sys.exit()
+        else:
+            for move in moves:
+                self.make_move(move)
+                self.draw(self.screen)
+                pygame.display.flip()
+                pygame.time.delay(500)
