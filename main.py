@@ -65,7 +65,7 @@ while running:
                 board.run()
 
             if button2_rect.collidepoint(mouse_pos):
-                if button2_rect.collidepoint(mouse_pos):
+                  if button2_rect.collidepoint(mouse_pos):
                     # Create a new menu with the AI options
                     ai_menu_font = pygame.font.Font(fons_path, 30)
 
@@ -135,6 +135,7 @@ while running:
                                 if ai_button4_rect.collidepoint(mouse_pos):
                                     board = Board(4, 4, screen, "a_star")
                                     board.run()
+
 
 
             if button3_rect.collidepoint(mouse_pos):
